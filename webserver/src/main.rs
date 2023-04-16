@@ -18,6 +18,13 @@ fn main() {
             exit(1);
         }
     };
+
+    /*
+        TODO: this does not seem to work with virtual ports opened with socat
+
+        thread 'main' panicked at 'Failed to open serial port: Error { kind: Unknown, description: "Not a typewriter" }'
+    */
+
     let port = serialport::new(port, 9600)
         .open()
         .expect("Failed to open serial port");
