@@ -1,13 +1,28 @@
 use std::{
-    fs,
+    env, fs,
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
+    process::exit,
     thread,
     time::Duration,
 };
 use webserver::ThreadPool;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let port = match args.get(1) {
+        Some(item) => item,
+        None => {
+            eprintln!("Missing required argument: serial port");
+            exit(1);
+        }
+    };
+    let port = serialport::new(port, 9600)
+        .open()
+        .expect("Failed to open serial port");
+
+    /*
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     let pool = ThreadPool::build(4).unwrap();
 
@@ -20,6 +35,7 @@ fn main() {
     }
 
     println!("Shutting down.");
+    */
 }
 
 fn handle_connection(mut stream: TcpStream) {

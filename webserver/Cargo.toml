@@ -6,3 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+serialport = { git = "https://github.com/serialport/serialport-rs.git", rev = "0585698f6db988f15d6fad6d9f1f6d496a2a1c1a" }
