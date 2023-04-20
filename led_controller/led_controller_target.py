@@ -1,10 +1,12 @@
 from machine import Pin, UART
 from collections import namedtuple
-from time import sleep
+from time import sleep_ms
+import gc
 
 
 class LedController:
-    Leds = namedtuple("Leds", "r, g, b")
+    Leds = namedtuple("Leds", ("r", "g", "b"))
+    COMMAND_DELIMITER = b"\r"
 
     def __init__(
         self,
@@ -29,28 +31,39 @@ class LedController:
             ("led", "red"): lambda: self.set_led_pins(True, False, False),
             ("led", "green"): lambda: self.set_led_pins(False, True, False),
             ("led", "blue"): lambda: self.set_led_pins(False, False, True),
+            ("led", "off"): lambda: self.set_led_pins(False, False, False),
         }
 
     def set_led_pins(self, r: bool, g: bool, b: bool) -> bytes:
-        self.leds.r.set_value(r)
-        self.leds.g.set_value(g)
-        self.leds.b.set_value(b)
-        return b"done"
+        self.leds.r.value(r)
+        self.leds.g.value(g)
+        self.leds.b.value(b)
+        return b"done\r\n"
 
-    def parse_line(self, line: str) -> None:
-        key = tuple(item.lower().strip() for item in line.split(" "))
-        print(key)
+    def execute_command(self, command_string: str) -> None:
+        key = tuple(item.lower().strip() for item in command_string.split(" "))
         command = self.commands.get(key, lambda: b"invalid command\r\n")
         self.uart.write(command())
 
-    def run(self) -> None:
-        self.uart.write(b"Hallo")
-        while True:
-            line = self.uart.readline()
-            if line is not None:
-                self.parse_line(line.decode("utf-8"))
+    def receive_line_blocking(self) -> str:
+        loop = True
+        rxBytes = b""
+        while loop:
+            if self.uart.any():
+                rxBytes += self.uart.read()
+                loop = LedController.COMMAND_DELIMITER not in rxBytes
             else:
-                sleep(1)
+                sleep_ms(1)
+
+        line = rxBytes.split(LedController.COMMAND_DELIMITER)[0].decode("utf-8")
+
+        return line
+
+    def run(self) -> None:
+        while True:
+            command = self.receive_line_blocking()
+            self.execute_command(command)
+            gc.collect()
 
 
 """
