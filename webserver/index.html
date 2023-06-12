@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
+
+<head>
+  <meta charset="utf-8">
+  <title>LED Controller</title>
+  <script>
+    function sendForm ()
+    {
+      var form = document.getElementById("colorForm");
+      form.submit();
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Minimalistic RGB LED Control</h1>
+  <fieldset>
+    <legend>Set LED color:</legend>
+    <form id="colorForm" action="setLED" method="post">
+        <input type="radio" id="redButton" name="color" value="red" onchange="sendForm();">
+        <label for="redButton">red</label><br>
+        <input type="radio" id="greenButton" name="color" value="green" onchange="sendForm();">
+        <label for="greenButton">green</label><br>
+        <input type="radio" id="blueButton" name="color" value="blue" onchange="sendForm();">
+        <label for="blueButton">blue</label><br>
+        <input type="radio" id="offButton" name="color" value="off" onchange="sendForm();" checked>
+        <label for="offButton">off</label>
+    </form>
+  </fieldset>
+</body>
+
+</html>

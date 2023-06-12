@@ -29,6 +29,7 @@ fn main() {
         .open()
         .expect("Failed to open serial port");
 
+    /*
     port.write(b"led off\r").unwrap();
     thread::sleep(Duration::from_secs(1));
     port.write(b"led red\r").unwrap();
@@ -45,7 +46,8 @@ fn main() {
     thread::sleep(Duration::from_secs(1));
 
     port.write(b"led off\r").unwrap();
-    /*
+    */
+
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     let pool = ThreadPool::build(4).unwrap();
 
@@ -58,7 +60,6 @@ fn main() {
     }
 
     println!("Shutting down.");
-    */
 }
 
 fn handle_connection(mut stream: TcpStream) {
@@ -73,18 +74,13 @@ fn handle_connection(mut stream: TcpStream) {
 
     let request_line = &http_request[0];
     let (status_line, filename) = match &request_line[..] {
-        "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", "hello.html"),
-        "GET /sleep HTTP/1.1" => {
-            thread::sleep(Duration::from_secs(5));
-            ("HTTP/1.1 200 OK", "hello.html")
-        }
-        _ => ("HTTP/1.1 404 NOT FOUND", "404.html"),
+        "POST /set_led HTTP/1.1" => ("HTTP/1.1 200 OK", "index.html"),
+        _ => ("HTTP/1.1 200 OK", "index.html"),
     };
 
-    let content = fs::read_to_string(filename).unwrap();
-    let length = content.len();
-
-    let response = format!("{status_line}\r\nContent-length: {length}\r\n\r\n{content}");
-
-    stream.write_all(response.as_bytes()).unwrap();
+    if let Ok(content) = fs::read_to_string(filename) {
+        let length = content.len();
+        let response = format!("{status_line}\r\nContent-length: {length}\r\n\r\n{content}");
+        stream.write_all(response.as_bytes()).unwrap();
+    }
 }
