@@ -5,12 +5,19 @@
 <head>
   <meta charset="utf-8">
   <title>LED Controller</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    function sendForm ()
-    {
-      var form = document.getElementById("colorForm");
-      form.submit();
-    }
+    $(document).ready(function() {
+      $('input[type="radio"]').change(function() {
+        var colorValue = $('input[name="color"]:checked').val();
+
+        $.ajax({
+          url: 'set_led',
+          type: 'POST',
+          data: {color: colorValue},
+        });
+      });
+    });
   </script>
 </head>
 
@@ -18,14 +25,14 @@
   <h1>Minimalistic RGB LED Control</h1>
   <fieldset>
     <legend>Set LED color:</legend>
-    <form id="colorForm" action="setLED" method="post">
-        <input type="radio" id="redButton" name="color" value="red" onchange="sendForm();">
+    <form>
+        <input type="radio" id="redButton" name="color" value="red">
         <label for="redButton">red</label><br>
-        <input type="radio" id="greenButton" name="color" value="green" onchange="sendForm();">
+        <input type="radio" id="greenButton" name="color" value="green">
         <label for="greenButton">green</label><br>
-        <input type="radio" id="blueButton" name="color" value="blue" onchange="sendForm();">
+        <input type="radio" id="blueButton" name="color" value="blue">
         <label for="blueButton">blue</label><br>
-        <input type="radio" id="offButton" name="color" value="off" onchange="sendForm();" checked>
+        <input type="radio" id="offButton" name="color" value="off">
         <label for="offButton">off</label>
     </form>
   </fieldset>
