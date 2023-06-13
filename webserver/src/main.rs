@@ -63,24 +63,37 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let http_request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect();
+    let mut buffer = [0; 1024];
+    stream.read(&mut buffer).expect("Failed to read tcp stream");
 
-    println!("Request: {:#?}", http_request);
+    let request = String::from_utf8_lossy(&buffer[..]);
+    println!("Request:\n{}", request);
 
-    let request_line = &http_request[0];
+    let request_line = &request.lines().collect::<Vec<_>>()[0];
     let (status_line, filename) = match &request_line[..] {
-        "POST /set_led HTTP/1.1" => ("HTTP/1.1 200 OK", "index.html"),
-        _ => ("HTTP/1.1 200 OK", "index.html"),
+        "POST /set_led HTTP/1.1" => {
+            let key = "color=";
+            if let Some(value_start) = request.find(key) {
+                let value = &request[value_start + key.len()..];
+                println!("{value}");
+            }
+            ("HTTP/1.1 200 OK", None)
+        }
+        _ => ("HTTP/1.1 200 OK", Some("index.html")),
     };
 
-    if let Ok(content) = fs::read_to_string(filename) {
-        let length = content.len();
-        let response = format!("{status_line}\r\nContent-length: {length}\r\n\r\n{content}");
-        stream.write_all(response.as_bytes()).unwrap();
-    }
+    let content = match filename {
+        None => "".to_string(),
+        Some(name) => match fs::read_to_string(name) {
+            Ok(c) => c,
+            Err(_) => "".to_string(),
+        },
+    };
+
+    let length = content.len();
+    let response = match length {
+        0 => format!("{status_line}"),
+        _ => format!("{status_line}\r\nContent-length: {length}\r\n\r\n{content}"),
+    };
+    stream.write_all(response.as_bytes()).unwrap();
 }
