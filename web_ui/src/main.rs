@@ -1,7 +1,4 @@
-use std::{
-    env,
-    process::exit,
-};
+use std::{env, process::exit};
 
 use serialport;
 
@@ -19,10 +16,15 @@ fn main() {
         }
     };
 
+    let addr = match args.get(2) {
+        Some(item) => item,
+        None => "127.0.0.1:7878",
+    };
+
     let port = serialport::new(port, 9600)
         .open()
         .expect("Failed to open serial port");
-    let app = Application::build("127.0.0.1:7878", port).expect("Failed to start application");
+    let app = Application::build(addr, port).expect("Failed to start application");
     app.run();
 
     println!("Shutting down.");
