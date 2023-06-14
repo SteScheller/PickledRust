@@ -1,12 +1,15 @@
 use std::{
-    env, fs,
-    io::{prelude::*, BufReader},
+    env,
+    fs,
+    io::prelude::{Read, Write},
     net::{TcpListener, TcpStream},
     process::exit,
-    thread,
-    time::Duration,
+    //thread,
+    //time::Duration,
 };
-use webserver::ThreadPool;
+
+mod threadpool;
+use threadpool::ThreadPool;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
